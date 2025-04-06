@@ -3,7 +3,6 @@ import os
 import re
 import json
 import asyncio
-import time
 from urllib.parse import urljoin
 
 import aiohttp
@@ -40,22 +39,24 @@ async def fetch_content(session, url, selector):
 
 def clean_text(html_content, patterns, replacements, selectors):
     soup = BeautifulSoup(str(html_content), 'html.parser')
+    # 1. Фильтруем лишние CSS селекторы
     if selectors:
         for selector in selectors:
             for elem in soup.select(selector):
                 elem.decompose()
-    text = str(soup)
-    text = text.replace('<p>', '//space//').replace('</p>', '//space//')
-    for i in range(1, 7):
-        text = text.replace('<h'+str(i)+'>', '//space//').replace('</h'+str(i)+'>', '//space//')
-    for old, new in replacements.items():
-        text = text.replace(old, new)
-    for pattern in patterns:
-        text = re.sub(pattern, '', text)
+    # 2. Разделяем тэги по строкам
+    text = str(soup).replace('><', '>\n<')
+    # 3. Удаляем квадратные скобки по краям
     if len(text) > 1:
         text = text[1:-1]
-    text = ''.join([line for line in text.strip().split('\n') if line.strip()])
-    return '\n'.join([line for line in text.split('//space//') if line])
+    # 4. Применяем регулярные выражения замены (удаляем все html-тэги)
+    for pattern in patterns:
+        text = re.sub(pattern, '', text)
+    # 5. Заменяем фрагменты текста (экранируем угловые скобки в кодовых блоках)
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    # 6. Удаляем пустые строки
+    return '\n'.join(line for line in text.replace('\r\n', '\n').split('\n') if len(line) > 0)
 
 
 def save_content(path1, path2, filename, h1, content, f1, h2, f2, url, title):
@@ -83,6 +84,7 @@ def filter_text(text):
     filtered_text = re.sub(pattern, '', text)
     return filtered_text
 
+
 async def parse():
     log_window.delete(1.0, tk.END)
     url = entry_url.get()
@@ -105,35 +107,43 @@ async def parse():
 
     log_message("Начинается парсинг...")
 
+    single_url = entry_url2.get().strip()
+    single_name = single_file_name.get().strip()
     async with aiohttp.ClientSession() as session:
-        chapter_blocks = await fetch_content(session, url, selectors['chapter_block'])
-        if not chapter_blocks:
-            messagebox.showerror("Ошибка", "Не удалось получить блоки глав")
-            return
+        if single_url != '' and single_name != '':
+            page_name = single_name + ".md"
+            await process_page(session, single_url, selectors['content'], save_path, page_name, header, footer, patterns
+                               , replacements, filter_selectors, save_path_2, h2, f2, single_name)
+        else:
+            chapter_blocks = await fetch_content(session, url, selectors['chapter_block'])
+            if not chapter_blocks:
+                messagebox.showerror("Ошибка", "Не удалось получить блоки глав")
+                return
 
-        chapters = {}
-        for chapter_block in chapter_blocks:
-            chapter_name_element = chapter_block.select_one(selectors['chapter_name'])
+            chapters = {}
+            for chapter_block in chapter_blocks:
+                chapter_name_element = chapter_block.select_one(selectors['chapter_name'])
 
-            chapter_name = chapter_name_element.get_text(strip=True) if chapter_name_element else "Без названия"
-            chapter_name = filter_text(chapter_name)
-            chapters[chapter_name] = chapter_block.select(selectors['page'])
+                chapter_name = chapter_name_element.get_text(strip=True) if chapter_name_element else "Без названия"
+                chapter_name = filter_text(chapter_name)
+                chapters[chapter_name] = chapter_block.select(selectors['page'])
 
-        tasks = []
-        for chapter, pages in chapters.items():
-            chapter_path = os.path.join(save_path, chapter)
-            chapter_path2 = os.path.join(save_path_2, chapter)
-            for id_page in range(len(pages)):
-                page_url = pages[id_page].get('href')
-                absolute_url = urljoin(url, page_url)
-                title = pages[id_page].get_text(strip=True)
-                title = filter_text(title)
-                page_name = str(id_page+1)+". "+title + ".md"
-                tasks.append(
-                    process_page(session, absolute_url, selectors['content'], chapter_path, page_name, header, footer,
-                                 patterns, replacements, filter_selectors, chapter_path2, h2, f2, title))
+            tasks = []
+            for chapter, pages in chapters.items():
 
-        await asyncio.gather(*tasks)
+                chapter_path = os.path.join(save_path, chapter)
+                chapter_path2 = os.path.join(save_path_2, chapter)
+                for id_page in range(len(pages)):
+                    page_url = pages[id_page].get('href')
+                    absolute_url = urljoin(url, page_url)
+                    title = pages[id_page].get_text(strip=True)
+                    title = filter_text(title)
+                    page_name = str(id_page+1)+". "+title + ".md"
+                    tasks.append(
+                        process_page(session, absolute_url, selectors['content'], chapter_path, page_name, header, footer,
+                                     patterns, replacements, filter_selectors, chapter_path2, h2, f2, title))
+
+            await asyncio.gather(*tasks)
 
     log_message("Парсинг завершен")
     messagebox.showinfo("Готово", "Парсинг завершен")
@@ -223,6 +233,15 @@ tk.Label(frame_left, text="Ссылка на оглавление").pack()
 entry_url = tk.Entry(frame_left, width=40)
 entry_url.pack()
 
+tk.Label(frame_left, text="Одиночная ссылка").pack()
+entry_url2 = tk.Entry(frame_left, width=40)
+entry_url2.pack()
+
+tk.Label(frame_left, text="Название одиночного файла").pack()
+single_file_name = tk.Entry(frame_left, width=40)
+single_file_name.pack()
+
+
 tk.Label(frame_left, text="Путь для сохранения").pack()
 entry_path = tk.Entry(frame_left, width=40)
 entry_path.pack()
@@ -246,7 +265,7 @@ for key, label in labels.items():
     entries[key] = tk.Entry(frame_left, width=40)
     entries[key].pack()
 
-tk.Label(frame_right, text="{%link%} - ссылка, {%title%} - заголовок)").pack()
+tk.Label(frame_right, text="{%link%} - ссылка, {%title%} - заголовок").pack()
 
 tk.Label(frame_right, text="Шапка").pack()
 entry_header = tk.Text(frame_right, height=2, width=40)
@@ -279,7 +298,6 @@ entry_filter_selectors.pack()
 tk.Button(frame_left, text="Сохранить конфиг", command=save_config).pack()
 tk.Button(frame_left, text="Загрузить конфиг", command=load_config).pack()
 tk.Button(frame_left, text="Запустить", command=lambda: run_asyncio_task(parse)).pack()
-
 log_window = scrolledtext.ScrolledText(root, height=10, width=85)
 log_window.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 
