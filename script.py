@@ -49,6 +49,7 @@ def clean_text(html_content, patterns, replacements, selectors):
     # 3. Удаляем квадратные скобки по краям
     if len(text) > 1:
         text = text[1:-1]
+    text = text.replace('<pre class="brush:xml;">', ' ').replace('</pre>',' ')
     # 4. Применяем регулярные выражения замены (удаляем все html-тэги)
     for pattern in patterns:
         text = re.sub(pattern, '', text)
