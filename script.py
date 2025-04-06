@@ -3,6 +3,7 @@ import os
 import re
 import json
 import asyncio
+import time
 from urllib.parse import urljoin
 
 import aiohttp
@@ -57,10 +58,22 @@ def clean_text(html_content, patterns, replacements, selectors):
     return '\n'.join([line for line in text.split('//space//') if line])
 
 
-def save_content(path, filename, header, content, footer):
-    os.makedirs(path, exist_ok=True)
-    with open(os.path.join(path, filename), 'w', encoding='utf-8') as f:
-        f.write(header + '\n' + content + '\n' + footer)
+def save_content(path1, path2, filename, h1, content, f1, h2, f2, url, title):
+
+    os.makedirs(path1, exist_ok=True)
+    os.makedirs(path2, exist_ok=True)
+    # time.sleep(1)
+
+    with open(os.path.join(path1, filename.replace('/', ' ').replace('\\', ' ')), 'w', encoding='utf-8') as f:
+        h1 = h1.replace("{%link%}", url).replace("{%title%}", title)
+        f1 = f1.replace("{%link%}", url).replace("{%title%}", title)
+        f.write(h1 + '\n' + content + '\n' + f1)
+
+    with open(os.path.join(path2, filename.replace('/', ' ').replace('\\', ' ')), 'w', encoding='utf-8') as f:
+        h2 = h2.replace("{%link%}", url).replace("{%title%}", title)
+        f2 = f2.replace("{%link%}", url).replace("{%title%}", title)
+        f.write(h2 + '\n' + f2)
+
     log_message(f"Файл сохранен: {filename}")
 
 
@@ -68,8 +81,11 @@ async def parse():
     log_window.delete(1.0, tk.END)
     url = entry_url.get()
     save_path = entry_path.get()
+    save_path_2 = entry_path2.get()
     header = entry_header.get("1.0", tk.END).strip()
     footer = entry_footer.get("1.0", tk.END).strip()
+    h2 = header2.get("1.0", tk.END).strip()
+    f2 = footer2.get("1.0", tk.END).strip()
     selectors = {k: entries[k].get() for k in entries}
     patterns = entry_regex.get("1.0", tk.END).strip().split('\n')
     filter_selectors = [x for x in entry_filter_selectors.get("1.0", tk.END).strip().split('\n') if x != '']
@@ -92,19 +108,22 @@ async def parse():
         chapters = {}
         for chapter_block in chapter_blocks:
             chapter_name_element = chapter_block.select_one(selectors['chapter_name'])
-            chapter_name = chapter_name_element.get_text(strip=True) if chapter_name_element else "Без названия"
+            chapter_name = chapter_name_element.get_text(strip=True
+                ).replace('/', ' ').replace('\\', ' ') if chapter_name_element else "Без названия"
             chapters[chapter_name] = chapter_block.select(selectors['page'])
 
         tasks = []
         for chapter, pages in chapters.items():
             chapter_path = os.path.join(save_path, chapter)
+            chapter_path2 = os.path.join(save_path_2, chapter)
             for id_page in range(len(pages)):
                 page_url = pages[id_page].get('href')
                 absolute_url = urljoin(url, page_url)
-                page_name = str(id_page+1)+". "+pages[id_page].get_text(strip=True) + ".md"
+                title = pages[id_page].get_text(strip=True)
+                page_name = str(id_page+1)+". "+title + ".md"
                 tasks.append(
                     process_page(session, absolute_url, selectors['content'], chapter_path, page_name, header, footer,
-                                 patterns, replacements, filter_selectors))
+                                 patterns, replacements, filter_selectors, chapter_path2, h2, f2, title))
 
         await asyncio.gather(*tasks)
 
@@ -116,8 +135,11 @@ def save_config():
     config = {
         "url": entry_url.get(),
         "save_path": entry_path.get(),
+        "path_2": entry_path2.get(),
         "header": entry_header.get("1.0", tk.END).strip(),
         "footer": entry_footer.get("1.0", tk.END).strip(),
+        "header2": header2.get("1.0", tk.END).strip(),
+        "footer2": footer2.get("1.0", tk.END).strip(),
         "selectors": {k: entries[k].get() for k in entries},
         "patterns": [x for x in entry_regex.get("1.0", tk.END).strip().split('\n') if x != ""],
         "filter_selectors": [x for x in entry_filter_selectors.get("1.0", tk.END).strip().split('\n') if x != ""],
@@ -140,10 +162,18 @@ def load_config():
         entry_url.insert(0, config.get("url", ""))
         entry_path.delete(0, tk.END)
         entry_path.insert(0, config.get("save_path", ""))
+        entry_path2.delete(0, tk.END)
+        entry_path2.insert(0, config.get("path_2", ""))
         entry_header.delete("1.0", tk.END)
         entry_header.insert("1.0", config.get("header", ""))
         entry_footer.delete("1.0", tk.END)
         entry_footer.insert("1.0", config.get("footer", ""))
+
+        header2.delete("1.0", tk.END)
+        header2.insert("1.0", config.get("header2", ""))
+        footer2.delete("1.0", tk.END)
+        footer2.insert("1.0", config.get("footer2", ""))
+
         for k in entries:
             entries[k].delete(0, tk.END)
             entries[k].insert(0, config.get("selectors", {}).get(k, ""))
@@ -159,12 +189,12 @@ def load_config():
 # -----------------------------
 
 
-async def process_page(session, url, selector, chapter_path, filename, header, footer, patterns, replacements,
-                       filter_selectors):
+async def process_page(session, url, selector, chapter_path1, filename, header1, footer1, patterns, replacements,
+                       filter_selectors, chapter_path2, h2, f2, title):
     content_block = await fetch_content(session, url, selector)
     if content_block:
         cleaned_text = clean_text(content_block, patterns, replacements, filter_selectors)
-        save_content(chapter_path, filename, header, cleaned_text, footer)
+        save_content(chapter_path1, chapter_path2, filename, header1, cleaned_text, footer1, h2, f2, url, title)
 
 
 def run_asyncio_task(task):
@@ -190,6 +220,11 @@ entry_path = tk.Entry(frame_left, width=40)
 entry_path.pack()
 tk.Button(frame_left, text="Выбрать", command=lambda: entry_path.insert(0, filedialog.askdirectory())).pack()
 
+tk.Label(frame_left, text="Путь для дополнительного файла").pack()
+entry_path2 = tk.Entry(frame_left, width=40)
+entry_path2.pack()
+tk.Button(frame_left, text="Выбрать", command=lambda: entry_path2.insert(0, filedialog.askdirectory())).pack()
+
 labels = {
     "chapter_block": "Селектор блока главы",
     "chapter_name": "Селектор названия главы",
@@ -203,6 +238,8 @@ for key, label in labels.items():
     entries[key] = tk.Entry(frame_left, width=40)
     entries[key].pack()
 
+tk.Label(frame_right, text="{%link%} - ссылка, {%title%} - заголовок)").pack()
+
 tk.Label(frame_right, text="Шапка").pack()
 entry_header = tk.Text(frame_right, height=2, width=40)
 entry_header.pack()
@@ -210,6 +247,14 @@ entry_header.pack()
 tk.Label(frame_right, text="Футер").pack()
 entry_footer = tk.Text(frame_right, height=2, width=40)
 entry_footer.pack()
+
+tk.Label(frame_right, text="Шапка доп. файла").pack()
+header2 = tk.Text(frame_right, height=2, width=40)
+header2.pack()
+
+tk.Label(frame_right, text="Футер доп. файла").pack()
+footer2 = tk.Text(frame_right, height=2, width=40)
+footer2.pack()
 
 tk.Label(frame_right, text="Фильтрация (рег. выражения, по одному в строке)").pack()
 entry_regex = tk.Text(frame_right, height=4, width=40)
