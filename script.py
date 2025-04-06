@@ -76,6 +76,12 @@ def save_content(path1, path2, filename, h1, content, f1, h2, f2, url, title):
 
     log_message(f"Файл сохранен: {filename}")
 
+def filter_text(text):
+    # Паттерн для кириллицы, латиницы, цифр и символов .,-
+    pattern = re.compile(r'[^a-zA-Zа-яА-ЯёЁ0-9.,\- ]')
+    # Заменяем все неподходящие символы на пустую строку
+    filtered_text = re.sub(pattern, '', text)
+    return filtered_text
 
 async def parse():
     log_window.delete(1.0, tk.END)
@@ -108,8 +114,9 @@ async def parse():
         chapters = {}
         for chapter_block in chapter_blocks:
             chapter_name_element = chapter_block.select_one(selectors['chapter_name'])
-            chapter_name = chapter_name_element.get_text(strip=True
-                ).replace('/', ' ').replace('\\', ' ') if chapter_name_element else "Без названия"
+
+            chapter_name = chapter_name_element.get_text(strip=True) if chapter_name_element else "Без названия"
+            chapter_name = filter_text(chapter_name)
             chapters[chapter_name] = chapter_block.select(selectors['page'])
 
         tasks = []
@@ -120,6 +127,7 @@ async def parse():
                 page_url = pages[id_page].get('href')
                 absolute_url = urljoin(url, page_url)
                 title = pages[id_page].get_text(strip=True)
+                title = filter_text(title)
                 page_name = str(id_page+1)+". "+title + ".md"
                 tasks.append(
                     process_page(session, absolute_url, selectors['content'], chapter_path, page_name, header, footer,
