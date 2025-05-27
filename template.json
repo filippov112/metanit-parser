@@ -1,0 +1,31 @@
+{
+    "url": "https://metanit.com/web/javascript/",
+    "save_path": "C:/knowledge/Temp/js",
+    "path_2": "C:/knowledge/Development/1. Languages/JS",
+    "header": "Составь конспект по статье:\n```",
+    "footer": "```",
+    "header2": "#JS\n# <font color=\"#00b0f0\">JS:</font> {%title%}",
+    "footer2": "---\n### Outer links:\n- {%link%}",
+    "selectors": {
+        "chapter_block": "#container > div.outercontainer > div.innercontainer > div.item.center.menC > ol > li",
+        "chapter_name": "li > p > a",
+        "page": "li > ol > li > p > a",
+        "content": "#container > div.outercontainer > div.innercontainer > div.item.center.menC"
+    },
+    "patterns": [
+        "<[^><]+>"
+    ],
+    "filter_selectors": [
+        "div.toolbar",
+        "td.gutter",
+        "div.nav",
+        "div.socBlock",
+        "style",
+        "div.date",
+        "div.commentABl"
+    ],
+    "replacements": {
+        "&lt;": "<",
+        "&gt;": ">"
+    }
+}

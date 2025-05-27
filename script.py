@@ -172,8 +172,12 @@ def save_config():
         log_message("Конфигурация сохранена")
 
 
-def load_config():
-    file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+def load_config(_file_path=""):
+    file_path = ""
+    if _file_path != "":
+        file_path = _file_path
+    else:
+        file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
     if file_path:
         with open(file_path, "r", encoding="utf-8") as f:
             config = json.load(f)
@@ -302,4 +306,5 @@ tk.Button(frame_left, text="Запустить", command=lambda: run_asyncio_tas
 log_window = scrolledtext.ScrolledText(root, height=10, width=85)
 log_window.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 
+load_config("template.json")
 root.mainloop()
