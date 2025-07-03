@@ -6,12 +6,10 @@
     "footer": "```",
     "header2": "#JS\n# <font color=\"#00b0f0\">JS:</font> {%title%}",
     "footer2": "---\n### Outer links:\n- {%link%}",
-    "selectors": {
-        "chapter_block": "#container > div.outercontainer > div.innercontainer > div.item.center.menC > ol > li",
-        "chapter_name": "li > p > a",
-        "page": "li > ol > li > p > a",
-        "content": "#container > div.outercontainer > div.innercontainer > div.item.center.menC"
-    },
+    "selectors_chapter_block": "#container > div.outercontainer > div.innercontainer > div.item.center.menC > ol > li",
+    "selectors_chapter_name": "li > p > a",
+    "selectors_page": "li > ol > li > p > a",
+    "selectors_content": "#container > div.outercontainer > div.innercontainer > div.item.center.menC",
     "patterns": [
         "<[^><]+>"
     ],
