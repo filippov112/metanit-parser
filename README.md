@@ -1,35 +1,27 @@
 # Article parser from Metanit.com
 
-## Description
-
 Application for automatic parsing of article texts from the metanit.com website for their subsequent processing using neural networks.
-
-## Functionality
-
 Works in 2 modes:
 1) Parsing a topic
 2) Parsing a single page
 
 ## Technologies
+Language: Python 3.11
+Framework: PySide6
 
-Language: Python
-Framework: tkinter
-
-## Installation and launch
-
+## Build
 1. Deploy the environment and install dependencies
 ```
 python -m venv venv # create an environment
 .\venv\Scripts\activate # activate (Windows)
 pip install -r requirements.txt
 ```
-
-2. Launch the application
+2. Build (the file will appear in the `dist/` directory)
 ```
-python script.py
+pyinstaller --onefile --windowed main.py
 ```
 
-## User Guide
+## FAQ
 
 #### Fields
 - `Link to table of contents`: link to the table of contents page of the topic that needs to be downloaded.
