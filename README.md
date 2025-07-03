@@ -1,65 +1,62 @@
+# Article parser from Metanit.com
 
-# Парсер статей с Metanit.com
+## Description
 
-## Описание
+Application for automatic parsing of article texts from the metanit.com website for their subsequent processing using neural networks.
 
-Приложение для автоматического парсинга текстов статей с сайта metanit.com для их последующей обработки посредством нейросетей.
+## Functionality
 
-## Функционал
+Works in 2 modes:
+1) Parsing a topic
+2) Parsing a single page
 
-Работает в 2 режимах:
-1) Парсинг темы
-2) Парсинг отдельной страницы
+## Technologies
 
+Language: Python
+Framework: tkinter
 
-## Технологии
+## Installation and launch
 
-Язык: Python
-Фреймворк: tkinter
+1. Deploy the environment and install dependencies
+```
+python -m venv venv # create an environment
+.\venv\Scripts\activate # activate (Windows)
+pip install -r requirements.txt
+```
 
-## Установка и запуск
+2. Launch the application
+```
+python script.py
+```
 
-1. Разворачиваем окружение и устанавливаем зависимости
-	```
-	python -m venv venv       # создание окружения
-	.\venv\Scripts\activate   # активация (Windows)
-	pip install -r requirements.txt
-	```
+## User Guide
 
-2. Запускаем приложение
-	```
-	python script.py
-	```
+#### Fields
+- `Link to table of contents`: link to the table of contents page of the topic that needs to be downloaded.
+- `Single link`: (single mode) link to the article
+- `Single file name`: (single mode) what name to use for the files
+- `Save path`: directory for saving articles
+- `Additional file path`: directory for saving template files, where the article text will be inserted after AI processing.
+- `Header`: Text to insert at the beginning of the article file.
+- `Footer`: Text to insert at the end of the article file.
+- `Additional file header`: Text to insert at the beginning of the template file.
+- `Additional file footer`: Text to insert at the end of the template file.
 
-## Руководство пользователя
-
-#### Поля
-- `Ссылка на оглавление`: ссылка на страницу оглавления темы, которую необходимо скачать.
-- `Одиночная ссылка`: (одиночный режим) ссылка на статью
-- `Название одиночного файла`: (одиночный режим) какое название использовать для файлов
-- `Путь для сохранения`: каталог для сохранения статей
-- `Путь для дополнительного файла`: каталог для сохранения файлов-заготовок, куда будет вставляться текст статей после AI обработки.
-- `Шапка`: Текст для вставки в начало файла статьи.
-- `Футер`: Текст для вставки в конец файла статьи.
-- `Шапка доп. файла`: Текст для вставки в начало файла заготовки.
-- `Футер доп. файла`: Текст для вставки в конец файла заготовки.
-
-**Служебные поля:**
-- `Селектор блока главы`: CSS селектор div блока страницы оглавления, содержащего ссылку на статью.
-- `Селектор названия главы`: CSS селектор блока с текстом ссылки, для парсинга названия статьи. (прибавляется к селектору блока главы)
-- `Селектор ссылки`: CSS селектор для получения ссылки на статью (прибавляется к селектору блока главы)
-- `Фильтрация (рег. выражения)`: Регулярные выражения для удаления неинформативного текста.
-- `Список замены`: Текстовые пары (найти -> заменить), нужны в основном для экранирования символов.
-- `Селекторы фильтрации контента`: Отфильтровываемые блоки при парсинге статьи.
+**Service fields:**
+- `Chapter block selector`: CSS selector of the div block of the table of contents page containing the link to the article.
+- `Chapter title selector`: CSS selector of the block with the link text, for parsing the article title. (added to the chapter block selector)
+- `Link selector`: CSS selector to get a link to the article (added to the chapter block selector)
+- `Filtering (reg. expressions)`: Regular expressions to remove uninformative text.
+- `Replacement list`: Text pairs (find -> replace), mainly needed for escaping characters.
+- `Content filtering selectors`: Filtered blocks when parsing an article.
 
 ---
-1. В зависимости от режима заполняем обязательные поля:
-	- Режим темы: Ссылка на оглавление
-	- Режим отдельной страницы: Одиночная ссылка и Название одиночного файла
-2. Также заполняем Путь для сохранения (куда будут сохраняться файлы), Путь для дополнительного файла (заготовки для вставки статей после их обработки нейросетью).
-3. При необходимости можно указать свои шапки и футеры для обоих файлов.
-4. Готовую конфигурацию можно сохранить, чтобы загрузить из файла в следующий раз.
-5. Когда всё готово, нажимаем Запуск. Ход процесса будет отображаться в нижнем окне логирования.
+1. Depending on the mode, fill in the required fields:
+- Topic mode: Link to the table of contents
+- Single page mode: Single link and Name of a single file
+2. Also fill in the Save path (where the files will be saved), Path for an additional file (blanks for inserting articles after they are processed by the neural network).
+3. If necessary, you can specify your own headers and footers for both files.
+4. The finished configuration can be saved to load from the file next time.
+5. When everything is ready, click Run. The progress of the process will be displayed in the lower logging window.
 
 ![](./_/Pasted%20image%2020250527163929.png)
-
