@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ```
 2. Build (the file will appear in the `dist/` directory)
 ```
-pyinstaller --onefile --windowed main.py
+pyinstaller --onefile --windowed script.py
 ```
 
 ## FAQ
