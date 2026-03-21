@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Metanit_Parser.Models
+namespace KnowParser.Models
 {
     class SettingsConfig
     {

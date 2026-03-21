@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 
-namespace Metanit_Parser.Services
+namespace KnowParser.Services
 {
     public class LLMClient
     {

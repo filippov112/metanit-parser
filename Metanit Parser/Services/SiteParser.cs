@@ -1,9 +1,24 @@
 ﻿using AngleSharp;
+using KnowParser.Models;
 
-namespace Metanit_Parser.Services
+namespace KnowParser.Services
 {
     public class SiteParser
     {
+        public static async Task<List<PageData>> ParseSite(string startLink, bool onlyChildren)
+        {
+            startLink = startLink.ToLower();
+            var domain = GetDomain(startLink);
+            List<PageData> pages = await GetLinks(startLink, domain, onlyChildren);
+
+            foreach (var page in pages)
+            {
+                page.Content = await GetText(page.Url, "div.item.center", ["h1", "div.date", "div.socBlock", "td.gutter", "style", "div.nav"]);
+            }
+            return pages;
+        }
+
+
         /// <summary>
         /// Собирает релевантный текст страницы
         /// </summary>
@@ -11,7 +26,7 @@ namespace Metanit_Parser.Services
         /// <param name="selector"></param>
         /// <param name="filter_selectors"></param>
         /// <returns></returns>
-        public async Task<string[]> Parse(string url, string selector, string[] filter_selectors)
+        public static async Task<string> GetText(string url, string selector, string[] filter_selectors)
         {
             var config = Configuration.Default.WithDefaultLoader();
             var context = BrowsingContext.New(config);
@@ -29,30 +44,63 @@ namespace Metanit_Parser.Services
                     }
                 }
             }
-            return [.. elements.Select(e => e.TextContent)];
+            return string.Join("\n", elements.Select(e => e.TextContent).Select(s => string.IsNullOrEmpty(s.Trim()) ? s.Trim() : s).Where(s => !string.IsNullOrEmpty(s)));
         }
 
         /// <summary>
         /// Собирает оглавление
         /// </summary>
-        /// <param name="url"></param>
-        /// <param name="a_selector"></param>
+        /// <param name="startLink"></param>
         /// <returns></returns>
-        public async Task<List<(string Title, string Link)>> ParseLinks(string url, string a_selector)
+        public static async Task<List<PageData>> GetLinks(string startLink, string domain, bool onlyChildren)
         {
             var config = Configuration.Default.WithDefaultLoader();
             var context = BrowsingContext.New(config);
-            var document = await context.OpenAsync(url);
+            var document = await context.OpenAsync(startLink);
 
-            var tags_a = document.QuerySelectorAll(a_selector);
-            List<(string Title, string Link)> links = [];
+            var tags_a = document.QuerySelectorAll("a");
+            List<PageData> links = [];
             foreach (var tag in tags_a)
             {
                 var title = tag.TextContent;
-                var link = url + tag.GetAttribute("href");
-                links.Add((title, link));
+                var link = tag.GetAttribute("href");
+                if (!string.IsNullOrEmpty(link) && link != "/")
+                {
+                    link = GetFullUrl(link, startLink);
+                    if (IsTrueLink(startLink, domain, link, onlyChildren))
+                        links.Add(new() { Name = title, Url = link, Domain = domain });
+                }
             }
             return links;
         }
+
+        // Соответствует ли ссылка критериям поиска
+        public static bool IsTrueLink(string startLink, string domain, string url, bool onlyChildren)
+        {
+            return (!onlyChildren && url.Contains(domain)) || url.Contains(startLink);
+        }
+
+
+        // Получает домен сайта
+        public static string GetDomain(string url)
+        {
+            url = url.ToLower();
+            var protocol_and_adress = url.Split("://");
+            var domain = protocol_and_adress.Last().Split("/").First();
+            if (protocol_and_adress.Length > 1)
+                domain = protocol_and_adress.First() + "://" + domain;
+            return domain;
+        }
+
+        // Абсолютный путь
+        public static string GetFullUrl(string url, string domain)
+        {
+            url = url.ToLower();
+            if (url.Contains("//"))
+                return url;
+            if (url.StartsWith('/'))
+                url = url[1..];
+            return domain + "/" + url;
+        }    
     }
 }

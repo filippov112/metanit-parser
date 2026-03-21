@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using KnowParser.Services;
+using System.Diagnostics;
 using System.Windows;
 
 namespace Metanit_Parser
@@ -10,13 +11,14 @@ namespace Metanit_Parser
     {
         public App()
         {
-            var parser = new Services.SiteParser();
+            //var parser = new SiteParser();
 
-            var content = parser.Parse("https://metanit.com/java/android/18.1.php", "div.item.center", ["h1", "div.date", "div.socBlock", "td.gutter", "style", "div.nav"]);
+            //var content = SiteParser.GetText(, "div.item.center", ["h1", "div.date", "div.socBlock", "td.gutter", "style", "div.nav"]);
 
-            Debug.Write(string.Join("\n", content.Result[0].Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))));
+            //Debug.Write(string.Join("\n", content.Result[0].Split("\n").Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))));
 
-
+            var pages = SiteParser.ParseSite("https://metanit.com/sharp/grpc/", true).Result;
+            FileService.SaveContent(pages, "C:\\Users\\ilya\\Desktop\\gRPC");
         }
     }
 

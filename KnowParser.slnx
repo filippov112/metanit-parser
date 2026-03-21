@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="KnowParser.Tests/KnowParser.Tests.csproj" Id="3519de50-8545-4689-8922-05d688a41643" />
+  <Project Path="Metanit Parser/KnowParser.csproj" />
+</Solution>
