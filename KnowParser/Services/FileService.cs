@@ -6,29 +6,29 @@ namespace KnowParser.Services
 {
     public class FileService
     {
-        public static void SaveContent(List<PageData> pages, string catalog)
+        public static async Task SaveContent(List<PageData> pages, string catalog, string header, string footer, Action<string>? logger = null)
         {
             foreach (var page in pages)
             {
                 AddDirectoryAndFilePath(page, catalog);
                 if (!Path.Exists(page.Directory))
                     Directory.CreateDirectory(page.Directory);
-                SaveTo(page.File, page.Content);
+                await SaveTo(page.File, header + page.Content + footer, logger);
+                logger?.Invoke($"Сохранен файл:{{ Path = {page.File} }}");
             }
         }
 
         // Сохранить текстовое содержимое в файл
-        public static void SaveTo(string path, string content)
+        public static async Task SaveTo(string path, string content, Action<string>? logger = null)
         {
             try
             {
                 using StreamWriter writer = new(path);
-                writer.WriteLine(content);
-                Debug.WriteLine($"""Сохранен файл "{path}"!""");
+                await writer.WriteLineAsync(content);
             }
             catch (IOException e)
             {
-                Debug.WriteLine("Error writing file: {0}", e.Message);
+                logger?.Invoke($"Error writing file: { e.Message}");
             }
         }
 

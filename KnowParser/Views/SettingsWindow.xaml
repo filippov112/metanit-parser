@@ -1,0 +1,183 @@
+﻿<Window x:Class="KnowParser.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:KnowParser.Views"
+        xmlns:viewmodels="clr-namespace:KnowParser.ViewModels"
+        mc:Ignorable="d"
+        Title="Настройки конфигурации" Height="450" Width="800"
+        >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ScrollViewer -->
+        <ScrollViewer VerticalScrollBarVisibility="Hidden">
+            <StackPanel Margin="10,5">
+
+                <!-- Каталог сохранения запросов -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.ColumnSpan="2" Padding="2,2,2,2" FontWeight="Bold">
+                        Каталог сохранения запросов:
+                    </Label>
+
+                    <TextBox 
+                        Grid.Row="1" 
+                        Grid.Column="0"
+                        Margin="3,3,3,3" 
+                        MaxLines="1"
+                        Text="{Binding SaveDirectoryPath, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Button 
+                        Grid.Row="1" 
+                        Grid.Column="1" 
+                        Margin="3,3,3,3"
+                        Command="{Binding SelectFolderCommand}">
+                        Выбрать
+                    </Button>
+                </Grid>
+
+                <Separator Margin="0,10"/>
+
+                <!-- Текстовый селектор -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Column="0" Padding="2,2,2,2" FontWeight="Bold">
+                        Текстовый селектор:
+                    </Label>
+
+                    <TextBox 
+                        Grid.Row="1" 
+                        Grid.Column="0"
+                        Margin="3,3,3,3" 
+                        MaxLines="1"
+                        Text="{Binding TextSelector, UpdateSourceTrigger=PropertyChanged}" />
+                </Grid>
+
+                <Separator Margin="0,10"/>
+
+                <!-- Отфильтровываемые селекторы -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Column="0" Padding="2,2,2,2" FontWeight="Bold">
+                        Отфильтровываемые селекторы (1 на строку):
+                    </Label>
+
+                    <TextBox 
+                        Grid.Row="1" 
+                        Grid.Column="0"
+                        Margin="3,3,3,3" 
+                        TextWrapping="Wrap"
+                        AcceptsReturn="True"
+                        VerticalScrollBarVisibility="Auto" 
+                        Height="100"
+                        Text="{Binding FilteredSelectors, UpdateSourceTrigger=PropertyChanged}" />
+                </Grid>
+
+                <Separator Margin="0,10"/>
+
+                <!-- Шапка и Футер запроса -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Padding="2,2,2,2" FontWeight="Bold">
+                        Шапка запроса:
+                    </Label>
+
+                    <TextBox 
+                        Grid.Row="1" 
+                        Grid.Column="0"
+                        Margin="3,3,3,3" 
+                        TextWrapping="Wrap"
+                        AcceptsReturn="True"
+                        VerticalScrollBarVisibility="Auto" 
+                        Height="100"
+                        Text="{Binding RequestHeader, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Label Grid.Row="0" Grid.Column="1" Padding="2,2,2,2" FontWeight="Bold">
+                        Футер запроса:
+                    </Label>
+
+                    <TextBox 
+                        Grid.Row="1" 
+                        Grid.Column="1"
+                        Margin="3,3,3,3" 
+                        TextWrapping="Wrap"
+                        AcceptsReturn="True"
+                        VerticalScrollBarVisibility="Auto" 
+                        Height="100"
+                        Text="{Binding RequestFooter, UpdateSourceTrigger=PropertyChanged}" />
+                </Grid>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Кнопки управления -->
+        <StackPanel 
+            Grid.Row="1" 
+            Orientation="Horizontal" 
+            FlowDirection="RightToLeft"
+            Margin="10,10,10,10">
+
+            <Button 
+                Command="{Binding SaveCommand}"
+                Padding="15,10" 
+                Background="#4CAF50" 
+                Foreground="White"
+                BorderThickness="0">
+                Сохранить
+            </Button>
+
+            <Button 
+                Command="{Binding SaveAsCommand}"
+                Padding="15,10" 
+                Margin="10,0,0,0"
+                Background="#4CAF50" 
+                Foreground="White"
+                BorderThickness="0">
+                Сохранить как
+            </Button>
+
+            <Button 
+                Command="{Binding ResetCommand}"
+                Padding="15,10" 
+                Margin="10,0,0,0">
+                Сбросить к заводским
+            </Button>
+
+            <Button 
+                Command="{Binding LoadCommand}"
+                Padding="15,10" 
+                Margin="10,0,0,0">
+                Загрузить конфигурацию
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KnowParser.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -10,15 +11,16 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Metanit_Parser.Views
+namespace KnowParser.Views
 {
     /// <summary>
     /// Логика взаимодействия для SettingsWindow.xaml
     /// </summary>
     public partial class SettingsWindow : Window
     {
-        public SettingsWindow()
+        public SettingsWindow(SettingsVM vm)
         {
+            DataContext = vm;
             InitializeComponent();
         }
     }

@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Metanit Parser\KnowParser.csproj" />
+    <ProjectReference Include="..\KnowParser\KnowParser.csproj" />
   </ItemGroup>
 
   <ItemGroup>

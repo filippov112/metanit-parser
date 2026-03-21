@@ -1,19 +1,21 @@
 ﻿using AngleSharp;
 using KnowParser.Models;
+using System.Windows.Shapes;
 
 namespace KnowParser.Services
 {
     public class SiteParser
     {
-        public static async Task<List<PageData>> ParseSite(string startLink, bool onlyChildren)
+        public static async Task<List<PageData>> ParseSite(string startLink, bool onlyChildren, string textSelector, List<string> filterSelectors, Action<string>? logger = null)
         {
             startLink = startLink.ToLower();
             var domain = GetDomain(startLink);
-            List<PageData> pages = await GetLinks(startLink, domain, onlyChildren);
+            List<PageData> pages = await GetLinks(startLink, domain, onlyChildren, logger);
 
             foreach (var page in pages)
             {
-                page.Content = await GetText(page.Url, "div.item.center", ["h1", "div.date", "div.socBlock", "td.gutter", "style", "div.nav"]);
+                page.Content = await GetText(page.Url, textSelector, filterSelectors);
+                logger?.Invoke($"Получен текст для файла:{{ Name = {page.Name}, Url = {page.Url} }}");
             }
             return pages;
         }
@@ -26,7 +28,7 @@ namespace KnowParser.Services
         /// <param name="selector"></param>
         /// <param name="filter_selectors"></param>
         /// <returns></returns>
-        public static async Task<string> GetText(string url, string selector, string[] filter_selectors)
+        public static async Task<string> GetText(string url, string selector, List<string> filter_selectors)
         {
             var config = Configuration.Default.WithDefaultLoader();
             var context = BrowsingContext.New(config);
@@ -52,7 +54,7 @@ namespace KnowParser.Services
         /// </summary>
         /// <param name="startLink"></param>
         /// <returns></returns>
-        public static async Task<List<PageData>> GetLinks(string startLink, string domain, bool onlyChildren)
+        public static async Task<List<PageData>> GetLinks(string startLink, string domain, bool onlyChildren, Action<string>? logger = null)
         {
             var config = Configuration.Default.WithDefaultLoader();
             var context = BrowsingContext.New(config);
@@ -68,7 +70,11 @@ namespace KnowParser.Services
                 {
                     link = GetFullUrl(link, startLink);
                     if (IsTrueLink(startLink, domain, link, onlyChildren))
+                    {
                         links.Add(new() { Name = title, Url = link, Domain = domain });
+                        logger?.Invoke($"Найдена ссылка:{{ Name = {title}, Url = {link} }}");
+                    }
+                        
                 }
             }
             return links;

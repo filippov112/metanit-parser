@@ -1,6 +1,7 @@
-﻿using System.Windows;
+﻿using KnowParser.ViewModels;
+using System.Windows;
 
-namespace Metanit_Parser.Views
+namespace KnowParser.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -9,6 +10,7 @@ namespace Metanit_Parser.Views
     {
         public MainWindow()
         {
+            DataContext = new MainVM();
             InitializeComponent();
         }
     }
